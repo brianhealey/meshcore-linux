@@ -67,6 +67,7 @@ Key settings:
 | Key | Default | Notes |
 |-----|---------|-------|
 | `spidev` | `/dev/spidev0.0` | SPI device node |
+| `gpiochip` | `/dev/gpiochip0` | GPIO chip device path; RPi 5 users set to `/dev/gpiochip4` |
 | `lora_irq_pin` | (none) | GPIO line number for IRQ |
 | `lora_reset_pin` | (none) | GPIO line number for RESET |
 | `lora_nss_pin` | (none) | GPIO line number for NSS/CS (if not handled by the SPI driver) |
@@ -80,7 +81,7 @@ Key settings:
 | `advert_name` | `"Linux Repeater"` | Node name — first-run default only |
 | `admin_password` | `"password"` | Admin password — **change this**, first-run default only |
 | `lat` / `lon` | `0.0` | GPS coordinates for advertisement — first-run default only |
-| `data_dir` | `/var/lib/meshcore` | Where identity and node prefs are persisted |
+| `data_dir` | `/var/lib/meshcore` | Where identity and node prefs are persisted. Overridden by `--fsdir` on the command line (the service file uses `--fsdir /var/lib/meshcore`). |
 
 ### 3. Enable SPI and GPIO access
 
@@ -102,10 +103,10 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 **Directly** (for testing):
 
 ```sh
-sudo /usr/bin/meshcored
+sudo /usr/bin/meshcored --fsdir /var/lib/meshcore
 ```
 
-`sudo` is needed on first run to create `data_dir` if it doesn't exist. Once the directory is created and owned appropriately, it can run as a non-root user.
+`sudo` is needed on first run to create the data directory if it doesn't exist. Once the directory is created and owned appropriately, it can run as a non-root user.
 
 **As a systemd service** (recommended for production):
 
@@ -145,7 +146,7 @@ sudo systemctl restart meshcored
 
 ## Known Gaps / TODO
 
-- **No CLI argument parsing** — config path is hardcoded to `/etc/meshcored/meshcored.ini`; `data_dir` is only configurable via the INI file.
+- **INI path hardcoded** — the config file path is hardcoded to `/etc/meshcored/meshcored.ini` and cannot be changed at runtime. The data directory is configurable via `--fsdir` / `-d` or the `data_dir` INI key.
 - **Only repeater firmware** — there is no `linux_companion` target yet; companion radio support (BLE/serial interface to a phone app) is not implemented for Linux.
 - **`formatFileSystem()`** returns `false` (not implemented) — the CLI `format` command will report failure on Linux.
 - **No power management** — `board.sleep()` is a no-op; the power-saving loop in `main.cpp` never actually sleeps.
