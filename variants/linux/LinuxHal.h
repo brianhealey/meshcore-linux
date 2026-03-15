@@ -223,15 +223,10 @@ public:
     void detachInterrupt(uint32_t pin) override {
         for (int i = 0; i < _nirq; i++) {
             if (!_irq[i].req) continue;
-            // check if this request owns the pin
-            unsigned int offset = (unsigned int)pin;
-            size_t n = (size_t)gpiod_line_request_get_num_requested_lines(_irq[i].req);
-            unsigned int* offsets = new unsigned int[n];
-            gpiod_line_request_get_requested_offsets(_irq[i].req, offsets, n);
-            bool found = false;
-            for (size_t j = 0; j < n; j++) { if (offsets[j] == offset) { found = true; break; } }
-            delete[] offsets;
-            if (!found) continue;
+            // Each IRQ request covers exactly one pin; check it directly.
+            unsigned int req_offset = 0;
+            gpiod_line_request_get_requested_offsets(_irq[i].req, &req_offset, 1);
+            if (req_offset != (unsigned int)pin) continue;
 
             _irq[i].running = false;
             pthread_join(_irq[i].thread, nullptr);

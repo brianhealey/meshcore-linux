@@ -10,7 +10,16 @@ extern LinuxBoard board;
 
 class LinuxSX1262 : public SX1262 {
   public:
+    uint8_t currentSF = 0;  // tracks the active spreading factor; 0 until std_init()
+
     LinuxSX1262(Module *mod) : SX1262(mod) { }
+
+    // Shadow SX1262::setSpreadingFactor to keep currentSF in sync.
+    // Called via radio.setSpreadingFactor() in target.cpp (concrete type, not base ptr).
+    int16_t setSpreadingFactor(uint8_t sf) {
+      currentSF = sf;
+      return SX1262::setSpreadingFactor(sf);
+    }
 
     bool std_init(void* /*spi*/ = nullptr)
     {
@@ -28,6 +37,7 @@ class LinuxSX1262 : public SX1262 {
         return false;  // fail
       }
 
+      currentSF = config.lora_sf;
       setCRC(1);
 
       setCurrentLimit(config.current_limit);

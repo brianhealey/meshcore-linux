@@ -3,7 +3,9 @@
 
 LinuxBoard board;
 
-// LinuxHal is created lazily in radio_init() once board.config is loaded.
+// hal is constructed in radio_init() after board.config is loaded from the INI file.
+// The Module below is constructed with nullptr here; radio_init() reassigns it with
+// the real hal and pin numbers before any radio operation takes place.
 static LinuxHal* hal = nullptr;
 
 RADIO_CLASS radio = new Module(hal,
@@ -22,7 +24,7 @@ EnvironmentSensorManager sensors;
 bool radio_init() {
     rtc_clock.begin();
 
-    hal = new LinuxHal(board.config.spidev, "gpiochip0", 2000000);
+    hal = new LinuxHal(board.config.spidev, board.config.gpiochip, 2000000);
     hal->init();
     hal->spiBegin();
 

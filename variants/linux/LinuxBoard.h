@@ -30,14 +30,15 @@ public:
   bool dio2_as_rf_switch = false;
   bool rx_boosted_gain = true;
 
-  const char* spidev = "/dev/spidev0.0";
+  char spidev[32]        = "/dev/spidev0.0";
+  char gpiochip[32]      = "/dev/gpiochip0";
   float lora_tcxo = 1.8f;
 
-  const char *advert_name    = "Linux Repeater";
-  const char *admin_password = "password";
+  char advert_name[100]    = "Linux Repeater";
+  char admin_password[100] = "password";
   float lat = 0.0f;
   float lon = 0.0f;
-  const char *data_dir = "/var/lib/meshcore";
+  char data_dir[256] = "/var/lib/meshcore";
 
   int load(const char *filename);
 };

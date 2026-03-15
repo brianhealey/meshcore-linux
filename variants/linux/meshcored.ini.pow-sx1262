@@ -3,6 +3,7 @@
 #
 # Hardware config (read on every startup):
 spidev = /dev/spidev0.0
+gpiochip = /dev/gpiochip0
 lora_irq_pin = 22
 lora_reset_pin = 13
 # lora_nss_pin — SS is handled by the SPI driver; not needed

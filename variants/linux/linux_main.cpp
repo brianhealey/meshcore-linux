@@ -3,7 +3,6 @@
 // runs the standard Arduino setup() / loop() cycle.
 #include "Arduino.h"
 #include "LinuxFS.h"
-#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>

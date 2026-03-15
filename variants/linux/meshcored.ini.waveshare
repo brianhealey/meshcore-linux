@@ -3,6 +3,8 @@
 #
 # Hardware config (read on every startup):
 spidev = /dev/spidev0.0
+# RPi 5 users: change to /dev/gpiochip4
+gpiochip = /dev/gpiochip0
 lora_irq_pin = 16
 lora_reset_pin = 18
 lora_nss_pin = 21
