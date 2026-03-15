@@ -157,13 +157,15 @@ public:
 
         struct gpiod_line_request* req =
             gpiod_chip_request_lines(_chip, req_cfg, line_cfg);
+        int saved_errno = errno;
 
         gpiod_request_config_free(req_cfg);
         gpiod_line_config_free(line_cfg);
         gpiod_line_settings_free(settings);
 
         if (!req) {
-            fprintf(stderr, "LinuxHal: pinMode pin %u: %s\n", pin, strerror(errno));
+            fprintf(stderr, "LinuxHal: pinMode pin %u: errno=%d %s\n",
+                    pin, saved_errno, strerror(saved_errno));
             return;
         }
 
@@ -218,14 +220,15 @@ public:
 
         struct gpiod_line_request* req =
             gpiod_chip_request_lines(_chip, req_cfg, line_cfg);
+        int saved_errno = errno;
 
         gpiod_request_config_free(req_cfg);
         gpiod_line_config_free(line_cfg);
         gpiod_line_settings_free(settings);
 
         if (!req) {
-            fprintf(stderr, "LinuxHal: attachInterrupt pin %u: %s\n",
-                    pin, strerror(errno));
+            fprintf(stderr, "LinuxHal: attachInterrupt pin %u: errno=%d %s\n",
+                    pin, saved_errno, strerror(saved_errno));
             return;
         }
 
