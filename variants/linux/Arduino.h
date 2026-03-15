@@ -87,8 +87,7 @@ static inline void yield() { usleep(1); }
 using byte   = uint8_t;
 using word   = uint16_t;
 
-// Bring std::min / std::max / std::abs into global scope instead of using macros.
-// This avoids conflicts when downstream code also includes <algorithm>.
+// Bring std::min / std::max / std::abs into global scope.
 #include <algorithm>
 #include <cstdlib>
 using std::min;
