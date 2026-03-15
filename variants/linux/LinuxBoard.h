@@ -2,10 +2,10 @@
 
 #include <MeshCore.h>
 #include <Arduino.h>
+#include <RadioLib.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <RadioLib.h>
 
 class LinuxConfig {
 public:
@@ -18,27 +18,26 @@ public:
   uint8_t lora_cr = 5;
 #endif
 
-  uint32_t lora_irq_pin = RADIOLIB_NC;
+  uint32_t lora_irq_pin   = RADIOLIB_NC;
   uint32_t lora_reset_pin = RADIOLIB_NC;
-  uint32_t lora_nss_pin = RADIOLIB_NC;
-  uint32_t lora_busy_pin = RADIOLIB_NC;
-  uint32_t lora_rxen_pin = RADIOLIB_NC;
-  uint32_t lora_txen_pin = RADIOLIB_NC;
+  uint32_t lora_nss_pin   = RADIOLIB_NC;
+  uint32_t lora_busy_pin  = RADIOLIB_NC;
+  uint32_t lora_rxen_pin  = RADIOLIB_NC;
+  uint32_t lora_txen_pin  = RADIOLIB_NC;
 
   int8_t lora_tx_power = 22;
   float current_limit = 140;
   bool dio2_as_rf_switch = false;
   bool rx_boosted_gain = true;
 
-  char* spidev = "/dev/spidev0.0";
-
+  const char* spidev = "/dev/spidev0.0";
   float lora_tcxo = 1.8f;
 
-  char *advert_name = "Linux Repeater";
-  char *admin_password = "password";
+  const char *advert_name    = "Linux Repeater";
+  const char *admin_password = "password";
   float lat = 0.0f;
   float lon = 0.0f;
-  char *data_dir = "/var/lib/meshcore";
+  const char *data_dir = "/var/lib/meshcore";
 
   int load(const char *filename);
 };
@@ -79,8 +78,7 @@ public:
 class LinuxRTCClock : public mesh::RTCClock {
 public:
   LinuxRTCClock() { }
-  void begin() {
-  }
+  void begin() { }
   uint32_t getCurrentTime() override {
     struct timeval tv;
     gettimeofday(&tv, NULL);

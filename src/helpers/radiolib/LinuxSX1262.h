@@ -12,7 +12,7 @@ class LinuxSX1262 : public SX1262 {
   public:
     LinuxSX1262(Module *mod) : SX1262(mod) { }
 
-    bool std_init(SPIClass* spi = NULL)
+    bool std_init(void* /*spi*/ = nullptr)
     {
       LinuxConfig config = board.config;
 

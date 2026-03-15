@@ -16,7 +16,8 @@ public:
   float getLastSNR() const override { return ((LinuxSX1262 *)_radio)->getSNR(); }
 
   float packetScore(float snr, int packet_len) override {
-    int sf = ((LinuxSX1262 *)_radio)->spreadingFactor;
+    // spreadingFactor is private in RadioLib 7.4+; use the board config value.
+    int sf = board.config.lora_sf;
     return packetScoreInt(snr, sf, packet_len);
   }
 };

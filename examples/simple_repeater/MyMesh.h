@@ -11,8 +11,8 @@
   #include <LittleFS.h>
 #elif defined(ESP32)
   #include <SPIFFS.h>
-#elif defined(ARCH_PORTDUINO)
-  #include <PortduinoFS.h>
+#elif defined(LINUX_PLATFORM)
+  #include <LinuxFS.h>
 #endif
 
 #ifdef WITH_RS232_BRIDGE
