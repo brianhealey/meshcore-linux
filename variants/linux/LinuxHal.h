@@ -189,6 +189,22 @@ public:
     void attachInterrupt(uint32_t pin, void (*cb)(), uint32_t /*mode*/) override {
         if (!_chip || pin == RADIOLIB_NC || _nirq >= MAX_IRQ) return;
 
+        // RadioLib calls pinMode(irq, INPUT) then attachInterrupt(irq, ...).
+        // Release any existing plain-input request on this pin first so we
+        // don't get EBUSY when requesting it again with edge detection.
+        for (int i = 0; i < _nreq; i++) {
+            if (_req_pins[i] == pin && _reqs[i]) {
+                gpiod_line_request_release(_reqs[i]);
+                _reqs[i] = nullptr;
+                for (int j = i; j < _nreq - 1; j++) {
+                    _reqs[j]     = _reqs[j+1];
+                    _req_pins[j] = _req_pins[j+1];
+                }
+                _nreq--;
+                break;
+            }
+        }
+
         struct gpiod_line_settings* settings = gpiod_line_settings_new();
         gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_INPUT);
         gpiod_line_settings_set_edge_detection(settings, GPIOD_LINE_EDGE_RISING);
