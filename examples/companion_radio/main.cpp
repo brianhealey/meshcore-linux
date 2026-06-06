@@ -32,6 +32,8 @@ static uint32_t _atoi(const char* sp) {
 #elif defined(ESP32)
   #include <SPIFFS.h>
   DataStore store(SPIFFS, rtc_clock);
+#elif defined(ARDULINUX_PLATFORM)
+  DataStore store(ArduLinuxFS, rtc_clock);
 #endif
 
 #ifdef ESP32
@@ -79,6 +81,9 @@ static uint32_t _atoi(const char* sp) {
     ArduinoSerialInterface serial_interface;
   #endif
 #elif defined(STM32_PLATFORM)
+  #include <helpers/ArduinoSerialInterface.h>
+  ArduinoSerialInterface serial_interface;
+#elif defined(ARDULINUX_PLATFORM)
   #include <helpers/ArduinoSerialInterface.h>
   ArduinoSerialInterface serial_interface;
 #else
@@ -224,6 +229,20 @@ void setup() {
 #else
   serial_interface.begin(Serial);
 #endif
+  the_mesh.startInterface(serial_interface);
+#elif defined(ARDULINUX_PLATFORM)
+  // the VFS root is established by the ArduLinux core from --fsdir
+  // (default: the XDG data dir, e.g. ~/.local/share/meshcored/default)
+  store.begin();
+  the_mesh.begin(
+    #ifdef DISPLAY_CLASS
+        disp != NULL
+    #else
+        false
+    #endif
+  );
+
+  serial_interface.begin(Serial);
   the_mesh.startInterface(serial_interface);
 #else
   #error "need to define filesystem"
