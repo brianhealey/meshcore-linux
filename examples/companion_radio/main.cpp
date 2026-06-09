@@ -85,7 +85,9 @@ static uint32_t _atoi(const char* sp) {
   ArduinoSerialInterface serial_interface;
 #elif defined(ARDULINUX_PLATFORM)
   #include <helpers/ArduinoSerialInterface.h>
+  #include <helpers/LinuxTcpInterface.h>
   ArduinoSerialInterface serial_interface;
+  LinuxTcpInterface      tcp_interface;
 #else
   #error "need to define a serial interface"
 #endif
@@ -242,8 +244,17 @@ void setup() {
     #endif
   );
 
-  serial_interface.begin(Serial);
-  the_mesh.startInterface(serial_interface);
+  if (board.config.companion_tcp_port != 0
+      && tcp_interface.begin(board.config.companion_tcp_port, board.config.companion_tcp_bind)) {
+    the_mesh.startInterface(tcp_interface);
+    fprintf(stderr, "Companion: TCP listener on %s:%u\n",
+            board.config.companion_tcp_bind, board.config.companion_tcp_port);
+  } else {
+    serial_interface.begin(Serial);
+    the_mesh.startInterface(serial_interface);
+    fprintf(stderr, "Companion: stdin/stdout transport (companion_tcp_port = %u)\n",
+            board.config.companion_tcp_port);
+  }
 #else
   #error "need to define filesystem"
 #endif
