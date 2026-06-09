@@ -2,7 +2,7 @@ name: PR Build Check
 
 on:
   pull_request:
-    branches: [main, dev]
+    branches: [main, dev, linux]
     paths:
       - 'src/**'
       - 'examples/**'
@@ -10,7 +10,7 @@ on:
       - 'platformio.ini'
       - '.github/workflows/pr-build-check.yml'
   push:
-    branches: [main, dev]
+    branches: [main, dev, linux]
     paths:
       - 'src/**'
       - 'examples/**'
@@ -43,6 +43,8 @@ jobs:
           - wio_wm1110_repeater
           # SX1276 (ESP32)
           - Tbeam_SX1276_repeater
+          # Linux (ArduLinux on a Linux host)
+          - linux_repeater
 
     steps:
       - name: Clone Repo
@@ -50,6 +52,12 @@ jobs:
 
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-environment
+
+      - name: Install linux variant system deps
+        if: startsWith(matrix.environment, 'linux')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libgpiod-dev libi2c-dev libbluetooth-dev libuv1-dev
 
       - name: Build ${{ matrix.environment }}
         run: pio run -e ${{ matrix.environment }}
