@@ -185,6 +185,15 @@ DispatcherAction Mesh::onRecvPacket(Packet* pkt) {
           } else {
             MESH_DEBUG_PRINTLN("%s recv matches no peers, src_hash=%02X", getLogDateTime(), (uint32_t)src_hash);
           }
+        } else {
+          // Log forwarded direct message
+          const char* type_name = "DIRECT_MSG";
+          if (pkt->getPayloadType() == PAYLOAD_TYPE_REQ) type_name = "REQUEST";
+          else if (pkt->getPayloadType() == PAYLOAD_TYPE_RESPONSE) type_name = "RESPONSE";
+
+          Serial.print(getLogDateTime());
+          Serial.printf(" Mesh::onRecvPacket(): Forwarding %s src=%02X dst=%02X SNR=%.1fdB RSSI=%ddBm size=%d\n",
+                       type_name, src_hash, dest_hash, pkt->getSNR(), (int)_radio->getLastRSSI(), pkt->payload_len);
         }
         action = routeRecvPacket(pkt);
       }
@@ -212,6 +221,11 @@ DispatcherAction Mesh::onRecvPacket(Packet* pkt) {
             onAnonDataRecv(pkt, secret, sender, data, len);
             pkt->markDoNotRetransmit();
           }
+        } else {
+          // Log forwarded anonymous request
+          Serial.print(getLogDateTime());
+          Serial.printf(" Mesh::onRecvPacket(): Forwarding ANON_REQ dst=%02X SNR=%.1fdB RSSI=%ddBm size=%d\n",
+                       dest_hash, pkt->getSNR(), (int)_radio->getLastRSSI(), pkt->payload_len);
         }
         action = routeRecvPacket(pkt);
       }
@@ -230,15 +244,26 @@ DispatcherAction Mesh::onRecvPacket(Packet* pkt) {
         GroupChannel channels[4];
         int num = searchChannelsByHash(&channel_hash, channels, 4);
         // for each matching channel, try to decrypt data
+        bool decrypted = false;
         for (int j = 0; j < num; j++) {
           // decrypt, checking MAC is valid
           uint8_t data[MAX_PACKET_PAYLOAD];
           int len = Utils::MACThenDecrypt(channels[j].secret, data, macAndData, pkt->payload_len - i);
           if (len > 0) {  // success!
             onGroupDataRecv(pkt, pkt->getPayloadType(), channels[j], data, len);
+            decrypted = true;
             break;
           }
         }
+
+        // Log forwarded group message (or received but not decrypted)
+        if (!decrypted) {
+          Serial.print(getLogDateTime());
+          Serial.printf(" Mesh::onRecvPacket(): Forwarding %s ch=%02X SNR=%.1fdB RSSI=%ddBm size=%d\n",
+                       pkt->getPayloadType() == PAYLOAD_TYPE_GRP_TXT ? "GROUP_MSG" : "GROUP_DATA",
+                       channel_hash, pkt->getSNR(), (int)_radio->getLastRSSI(), pkt->payload_len);
+        }
+
         action = routeRecvPacket(pkt);
       }
       break;
