@@ -30,8 +30,9 @@ public:
   }
   uint8_t getSpreadingFactor() const override { return ((LinuxSX1262 *)_radio)->spreadingFactor; }
 
-  void setRxBoostedGainMode(bool en) override {
+  bool setRxBoostedGainMode(bool en) override {
     ((LinuxSX1262 *)_radio)->setRxBoostedGainMode(en);
+    return true; // RadioLib SX1262 doesn't return failure for this operation
   }
   bool getRxBoostedGainMode() const override {
     return ((LinuxSX1262 *)_radio)->getRxBoostedGainMode();
