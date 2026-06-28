@@ -296,8 +296,8 @@ DispatcherAction Mesh::onRecvPacket(Packet* pkt) {
           // Log position if available
           if (parser.isValid() && parser.hasLatLon()) {
             Serial.printf(" GPS=(%.6f,%.6f)",
-                         parser.getLat() / 1000000.0,
-                         parser.getLon() / 1000000.0);
+                         parser.getLat(),
+                         parser.getLon());
           }
           Serial.println();
 
