@@ -6,7 +6,7 @@
 
 namespace mesh {
 
-#ifdef LINUX_PLATFORM
+#ifdef ARDULINUX_PLATFORM
 // Packet capture for security research
 static FILE* packet_capture_file = nullptr;
 
@@ -21,7 +21,7 @@ static void logPacketToFile(const Packet* pkt, float rssi) {
   int8_t snr = pkt->_snr;
   int16_t rssi_i16 = (int16_t)rssi;
 
-  uint8_t buffer[MAX_MTU_SIZE];
+  uint8_t buffer[MAX_TRANS_UNIT];
   uint8_t len = pkt->writeTo(buffer);
 
   fwrite(&timestamp, 4, 1, packet_capture_file);
@@ -69,7 +69,7 @@ int Mesh::searchChannelsByHash(const uint8_t* hash, GroupChannel channels[], int
 }
 
 DispatcherAction Mesh::onRecvPacket(Packet* pkt) {
-#ifdef LINUX_PLATFORM
+#ifdef ARDULINUX_PLATFORM
   // Capture packet for security research
   logPacketToFile(pkt, _radio->getLastRSSI());
 #endif
