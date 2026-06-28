@@ -259,9 +259,11 @@ DispatcherAction Mesh::onRecvPacket(Packet* pkt) {
         // Log forwarded group message (or received but not decrypted)
         if (!decrypted) {
           Serial.print(getLogDateTime());
-          Serial.printf(" Mesh::onRecvPacket(): Forwarding %s ch=%02X SNR=%.1fdB RSSI=%ddBm size=%d\n",
+          Serial.printf(" Mesh::onRecvPacket(): Forwarding %s ch=%02X%s SNR=%.1fdB RSSI=%ddBm size=%d\n",
                        pkt->getPayloadType() == PAYLOAD_TYPE_GRP_TXT ? "GROUP_MSG" : "GROUP_DATA",
-                       channel_hash, pkt->getSNR(), (int)_radio->getLastRSSI(), pkt->payload_len);
+                       channel_hash,
+                       num > 0 ? " (known)" : "",
+                       pkt->getSNR(), (int)_radio->getLastRSSI(), pkt->payload_len);
         }
 
         action = routeRecvPacket(pkt);
