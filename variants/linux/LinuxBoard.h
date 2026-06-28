@@ -5,6 +5,7 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <unistd.h>
 #include <RadioLib.h>
 
 class LinuxConfig {
@@ -71,6 +72,14 @@ public:
 
   void reboot() override {
     exit(0);
+  }
+
+  void sleep(uint32_t secs) override {
+    if (secs > 0) {
+      ::sleep(secs);
+    } else {
+      usleep(10000); // 10ms delay to prevent busy loop
+    }
   }
 
   LinuxConfig config;
