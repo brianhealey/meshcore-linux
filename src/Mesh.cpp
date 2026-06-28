@@ -1,8 +1,37 @@
 #include "Mesh.h"
 #include "helpers/AdvertDataHelpers.h"
 //#include <Arduino.h>
+#include <stdio.h>
+#include <time.h>
 
 namespace mesh {
+
+#ifdef LINUX_PLATFORM
+// Packet capture for security research
+static FILE* packet_capture_file = nullptr;
+
+static void logPacketToFile(const Packet* pkt, float rssi) {
+  if (!packet_capture_file) {
+    packet_capture_file = fopen("/var/lib/meshcore/packet_capture.bin", "ab");
+    if (!packet_capture_file) return;
+  }
+
+  // Binary format: timestamp(4) | snr(1) | rssi(2) | len(1) | packet_data(len)
+  uint32_t timestamp = time(nullptr);
+  int8_t snr = pkt->_snr;
+  int16_t rssi_i16 = (int16_t)rssi;
+
+  uint8_t buffer[MAX_MTU_SIZE];
+  uint8_t len = pkt->writeTo(buffer);
+
+  fwrite(&timestamp, 4, 1, packet_capture_file);
+  fwrite(&snr, 1, 1, packet_capture_file);
+  fwrite(&rssi_i16, 2, 1, packet_capture_file);
+  fwrite(&len, 1, 1, packet_capture_file);
+  fwrite(buffer, len, 1, packet_capture_file);
+  fflush(packet_capture_file);
+}
+#endif
 
 void Mesh::begin() {
   Dispatcher::begin();
@@ -40,6 +69,11 @@ int Mesh::searchChannelsByHash(const uint8_t* hash, GroupChannel channels[], int
 }
 
 DispatcherAction Mesh::onRecvPacket(Packet* pkt) {
+#ifdef LINUX_PLATFORM
+  // Capture packet for security research
+  logPacketToFile(pkt, _radio->getLastRSSI());
+#endif
+
   if (pkt->isRouteDirect() && pkt->getPayloadType() == PAYLOAD_TYPE_TRACE) {
     if (pkt->path_len < MAX_PATH_SIZE) {
       uint8_t i = 0;
