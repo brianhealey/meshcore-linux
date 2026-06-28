@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "helpers/AdvertDataHelpers.h"
 //#include <Arduino.h>
 
 namespace mesh {
@@ -272,7 +273,34 @@ DispatcherAction Mesh::onRecvPacket(Packet* pkt) {
           is_ok = id.verify(signature, message, msg_len);
         }
         if (is_ok) {
-          MESH_DEBUG_PRINTLN("%s Mesh::onRecvPacket(): valid advertisement received!", getLogDateTime());
+          // Parse advertisement data for detailed logging
+          AdvertDataParser parser(app_data, app_data_len);
+          const char* type_name = "UNKNOWN";
+          if (parser.isValid()) {
+            switch (parser.getType()) {
+              case 1: type_name = "CHAT"; break;
+              case 2: type_name = "REPEATER"; break;
+              case 3: type_name = "ROOM"; break;
+              case 4: type_name = "SENSOR"; break;
+            }
+          }
+
+          // Log advertisement with details
+          Serial.print(getLogDateTime());
+          Serial.printf(" Mesh::onRecvPacket(): Advertisement from %s [%s] SNR=%.1fdB RSSI=%ddBm",
+                       parser.isValid() && parser.hasName() ? parser.getName() : "<unnamed>",
+                       type_name,
+                       pkt->getSNR(),
+                       (int)_radio->getLastRSSI());
+
+          // Log position if available
+          if (parser.isValid() && parser.hasLatLon()) {
+            Serial.printf(" GPS=(%.6f,%.6f)",
+                         parser.getLat() / 1000000.0,
+                         parser.getLon() / 1000000.0);
+          }
+          Serial.println();
+
           onAdvertRecv(pkt, id, timestamp, app_data, app_data_len);
           action = routeRecvPacket(pkt);
         } else {
